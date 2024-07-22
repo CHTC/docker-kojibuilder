@@ -54,9 +54,15 @@ fail () {
 }
 
 usage () {
-    echo >&2 "$__SUMMARY__"
-    echo >&2
-    echo >&2 "Usage: $Prog ..."
+    eecho "$__SUMMARY__"
+    eecho
+    eecho "Usage: $Prog [options]"
+    eecho
+    eecho "-c [cert]    Path to cert file"
+    eecho "-f           Run in foreground"
+    eecho "-i [image]   Container image to use"
+    eecho "-s [file]    /etc/mock/site-defaults.cfg file"
+    eecho "-u [user]    kojid user"
     exit "$1"
 }
 
@@ -73,19 +79,16 @@ require_program () {
         fail 127 "Required program '$1' not found in PATH"
 }
 
-if [[ $* == -h || $* == --help ]]; then
-    usage 0
-fi
-
 Foreground=
 
-while getopts ':c:fi:s:u:' opt; do
+while getopts ':c:fi:s:u:h' opt; do
     case $opt in
         c) Cert=$OPTARG ;;
         f) Foreground=true ;;
         i) Image=$OPTARG ;;
         s) Site_Defaults=$OPTARG ;;
         u) KOJID_USER=$OPTARG ;;
+        h) usage 0 ;;
         *) eecho Bad option "$opt"; usage 2 ;;
     esac
 done
