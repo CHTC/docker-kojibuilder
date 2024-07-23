@@ -10,11 +10,8 @@ __TLDR__
 
 Image=opensciencegrid/koji-builder:arm-release
 Cert=$PWD/kojid.pem
+Env_File=$PWD/kojibuilder.cfg
 Site_Defaults=$PWD/mock_site-defaults.cfg
-KOJID_USER=$(hostname -f)
-KOJI_HUB=kojihub2000.chtc.wisc.edu
-KOJID_MAXJOBS=2
-export KOJID_USER KOJI_HUB KOJID_MAXJOBS
 
 export PS4='+ ${FUNCNAME:-(main)}:${LINENO}: '
 
@@ -60,6 +57,7 @@ usage () {
     eecho "Usage: $Prog [options]"
     eecho
     eecho "-c [cert]    Path to cert file"
+    eecho "-e [file]    Environment file containing image config"
     eecho "-f           Run in foreground"
     eecho "-i [image]   Container image to use"
     eecho "-s [file]    /etc/mock/site-defaults.cfg file"
@@ -80,11 +78,20 @@ require_program () {
         fail 127 "Required program '$1' not found in PATH"
 }
 
+require_file () {
+    local file="$1"
+    local code="${2:-4}"
+    if [[ ! -f $file || ! -r $file ]]; then
+        fail "$code" "$file is not a readable file"
+    fi
+}
+
 Foreground=
 
-while getopts ':c:fi:s:u:h' opt; do
+while getopts ':c:e:fi:s:u:h' opt; do
     case $opt in
         c) Cert=$OPTARG ;;
+        e) Env_File=$OPTARG ;;
         f) Foreground=true ;;
         i) Image=$OPTARG ;;
         s) Site_Defaults=$OPTARG ;;
@@ -110,16 +117,15 @@ require_program podman
 if [[ $(id -u) != 0 ]]; then
     fail 3 "You must be root"
 fi
-if [[ ! -f $Cert || ! -r $Cert ]]; then
-    fail 4 "$Cert is not a readable file"
-fi
-if [[ ! -f $Site_Defaults || ! -r $Site_Defaults ]]; then
-    fail 4 "$Site_Defaults is not a readable file"
-fi
+
+require_file "$Cert"
+require_file "$Site_Defaults"
+require_file "$Env_File"
 
 # get absolute paths
 Cert=$(readlink -f "$Cert")
 Site_Defaults=$(readlink -f "$Site_Defaults")
+Env_File=$(readlink -f "$Env_File")
 
 
 podman volume create --ignore var_lib_mock || fail 5 "Couldn't create var_lib_mock volume"
@@ -136,9 +142,7 @@ if $Foreground; then
 else
     Args+=(--detach)
 fi
-Args+=(-e KOJID_USER="$KOJID_USER")
-Args+=(-e KOJI_HUB="$KOJI_HUB")
-Args+=(-e KOJID_MAXJOBS="$KOJID_MAXJOBS")
+Args+=(--env-file "$Env_File")
 Args+=(-v "${Cert}:/etc/pki/tls/private/kojid.pem:ro")
 Args+=(-v "${Site_Defaults}:/etc/mock/site-defaults.cfg")
 Args+=(-v var_lib_mock:/var/lib/mock)
