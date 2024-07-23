@@ -13,7 +13,8 @@ Cert=$PWD/kojid.pem
 Site_Defaults=$PWD/mock_site-defaults.cfg
 KOJID_USER=$(hostname -f)
 KOJI_HUB=kojihub2000.chtc.wisc.edu
-export KOJID_USER KOJI_HUB
+KOJID_MAXJOBS=2
+export KOJID_USER KOJI_HUB KOJID_MAXJOBS
 
 export PS4='+ ${FUNCNAME:-(main)}:${LINENO}: '
 
@@ -137,6 +138,7 @@ else
 fi
 Args+=(-e KOJID_USER="$KOJID_USER")
 Args+=(-e KOJI_HUB="$KOJI_HUB")
+Args+=(-e KOJID_MAXJOBS="$KOJID_MAXJOBS")
 Args+=(-v "${Cert}:/etc/pki/tls/private/kojid.pem:ro")
 Args+=(-v "${Site_Defaults}:/etc/mock/site-defaults.cfg")
 Args+=(-v var_lib_mock:/var/lib/mock)
