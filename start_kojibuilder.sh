@@ -8,7 +8,7 @@ __TLDR__
 
 # Defaults
 
-Image=opensciencegrid/koji-builder:arm-release
+Image=osgpreview/koji-builder:testing-arm
 Cert=$PWD/kojid.pem
 Env_File=$PWD/kojibuilder.cfg
 Site_Defaults=$PWD/mock_site-defaults.cfg
