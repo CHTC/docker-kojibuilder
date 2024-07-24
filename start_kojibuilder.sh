@@ -16,27 +16,9 @@ Site_Defaults=$PWD/mock_site-defaults.cfg
 export PS4='+ ${FUNCNAME:-(main)}:${LINENO}: '
 
 Prog=${0##*/}
-Progdir=$(dirname "$0")
-
-ask_yn () {
-    echo >&2 "$@"
-    while read -r; do
-        case $REPLY in
-            [Yy]*) return 0;;
-            [Nn]*) return 1;;
-            *) echo >&2 "Enter yes or no";;
-        esac
-    done
-    return 2  # EOF
-}
 
 eecho () {
     echo >&2 "$@"
-}
-
-eprintf () {
-    # shellcheck disable=SC2059
-    printf >&2 "$@"
 }
 
 fail () {
