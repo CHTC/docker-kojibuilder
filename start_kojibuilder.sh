@@ -2,11 +2,13 @@
 __SUMMARY__=$(cat <<"__TLDR__"
 start_kojibuilder.sh
 
-Start a koji builder using podman
+Start a koji builder using podman or docker
 __TLDR__
 )
 
+#
 # Defaults
+#
 
 Image=osgpreview/koji-builder:testing-arm
 Cert=$PWD/kojid.pem
@@ -43,7 +45,6 @@ usage () {
     eecho "-f           Run in foreground"
     eecho "-i [image]   Container image to use"
     eecho "-s [file]    /etc/mock/site-defaults.cfg file"
-    eecho "-u [user]    kojid user"
     exit "$1"
 }
 
@@ -55,17 +56,17 @@ is_true () {
     return 2  # unknown
 }
 
-require_program () {
-    command -v "$1" &>/dev/null ||
-        fail 127 "Required program '$1' not found in PATH"
-}
-
 require_file () {
     local file="$1"
     local code="${2:-4}"
     if [[ ! -f $file || ! -r $file ]]; then
         fail "$code" "$file is not a readable file"
     fi
+}
+
+docker_volume_exists () {
+    # podman has a 'volume exists' command but docker doesn't
+    "$Docker" volume ls -q | grep -Fxq "$1"
 }
 
 Foreground=
@@ -77,7 +78,6 @@ while getopts ':c:e:fi:s:u:h' opt; do
         f) Foreground=true ;;
         i) Image=$OPTARG ;;
         s) Site_Defaults=$OPTARG ;;
-        u) KOJID_USER=$OPTARG ;;
         h) usage 0 ;;
         *) eecho Bad option "$opt"; usage 2 ;;
     esac
@@ -91,14 +91,36 @@ IFS=$'\n\t'
 unset GREP_OPTIONS POSIXLY_CORRECT
 
 #
+#
 # Begin
 #
+#
 
-require_program podman
+#
+# Check container runtime
+#
 
-if [[ $(id -u) != 0 ]]; then
-    fail 3 "You must be root"
+if command -v docker &>/dev/null; then
+    Docker=docker
+    if docker version 2>/dev/null | grep -q Podman; then
+        # 'docker' is actually podman. We need to be root:
+        if [[ $(id -u) != 0 ]]; then
+            fail 3 "You must be root to run this with podman"
+        fi
+    fi
+elif command -v podman &>/dev/null; then
+    Docker=podman
+    if [[ $(id -u) != 0 ]]; then
+        fail 3 "You must be root to run this with podman"
+    fi
+else
+    fail 127 "Neither docker nor podman were found"
 fi
+
+
+#
+# Check required files
+#
 
 require_file "$Cert"
 require_file "$Site_Defaults"
@@ -110,13 +132,25 @@ Site_Defaults=$(readlink -f "$Site_Defaults")
 Env_File=$(readlink -f "$Env_File")
 
 
-podman volume create --ignore var_lib_mock || fail 5 "Couldn't create var_lib_mock volume"
-podman volume create --ignore var_lib_koji || fail 5 "Couldn't create var_lib_koji volume"
+#
+# Create docker volumes for /var/lib/mock and /var/lib/koji if necessary
+#
 
+if ! docker_volume_exists var_lib_mock; then
+    "$Docker" volume create var_lib_mock || fail 5 "Couldn't create var_lib_mock volume"
+fi
+if ! docker_volume_exists var_lib_koji; then
+    "$Docker" volume create var_lib_koji || fail 5 "Couldn't create var_lib_koji volume"
+fi
+
+
+#
+# Build argument list
+#
 
 Args=()
 Args=(--rm)
-if $Foreground; then
+if is_true "$Foreground"; then
     Args+=(-i)
     if [[ -t 0 && -t 1 ]]; then
         Args+=(-t)
@@ -133,7 +167,11 @@ Args+=(--name kojibuilder)
 Args+=(--cap-add SYS_ADMIN)
 
 
-exec podman run "${Args[@]}" "$Image"
+#
+# Run!
+#
+
+exec "$Docker" run "${Args[@]}" "$Image"
 
 fail 1 "Exec failed"
 
