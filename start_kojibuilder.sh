@@ -1,8 +1,23 @@
 #!/bin/bash
-__SUMMARY__=$(cat <<"__TLDR__"
-start_kojibuilder.sh
+__SUMMARY__=$(cat <<__TLDR__
+Start a Koji builder using Podman or Docker.  If using Podman, this needs
+to be run as root, otherwise we can't give the container enough privileges
+(builders need CAP_SYS_ADMIN).
 
-Start a koji builder using podman or docker
+Usage: $(basename "$0") [options]
+
+    -c [cert]       Path to cert file
+    -e [file]       Environment file containing image config
+    -f              Run in foreground
+    -i [image]      Container image to use
+    -s [file]       /etc/mock/site-defaults.cfg file
+
+The environment file needs to contain at least:
+    KOJI_HUB        The hostname of the koji-hub server
+    KOJID_USER      The user to log in as; this must match the CN of the
+                    certificate used with -c.
+
+See -h for help and defaults.
 __TLDR__
 )
 
@@ -10,41 +25,39 @@ __TLDR__
 # Defaults
 #
 
-Image=osgpreview/koji-builder:testing-arm
-Cert=$PWD/kojid.pem
-Env_File=$PWD/kojibuilder.cfg
-Site_Defaults=$PWD/mock_site-defaults.cfg
+DEFAULT_CERT=$PWD/kojid.pem
+DEFAULT_ENV_FILE=$PWD/kojibuilder.cfg
+DEFAULT_IMAGE=osgpreview/koji-builder:testing-arm
+DEFAULT_SITE_DEFAULTS=$PWD/mock_site-defaults.cfg
 
-export PS4='+ ${FUNCNAME:-(main)}:${LINENO}: '
-
-Prog=${0##*/}
 
 eecho () {
     echo >&2 "$@"
 }
 
 fail () {
+    set +x
     set +o nounset
     ret=${1:-1}
     shift &>/dev/null || :
     if [[ -z $* ]]; then
-        echo "$Prog: unspecified failure, exiting" >&2
+        eecho "unspecified failure, exiting"
     else
-        echo "$Prog:" "$@" >&2
+        eecho "$@"
     fi
     exit "$ret"
 }
 
 usage () {
+    set +x
     eecho "$__SUMMARY__"
     eecho
-    eecho "Usage: $Prog [options]"
-    eecho
-    eecho "-c [cert]    Path to cert file"
-    eecho "-e [file]    Environment file containing image config"
-    eecho "-f           Run in foreground"
-    eecho "-i [image]   Container image to use"
-    eecho "-s [file]    /etc/mock/site-defaults.cfg file"
+    eecho "Defaults:"
+    printf >&2 "Default %-24s   %s\n" \
+        "cert" "$DEFAULT_CERT" \
+        "environment file" "$DEFAULT_ENV_FILE" \
+        "image" "$DEFAULT_IMAGE" \
+        "mock site-defaults.cfg" "$DEFAULT_SITE_DEFAULTS"
     exit "$1"
 }
 
@@ -69,7 +82,15 @@ docker_volume_exists () {
     "$Docker" volume ls -q | grep -Fxq "$1"
 }
 
+#
+# Get arguments
+#
+
+Cert=$DEFAULT_CERT
+Env_File=$DEFAULT_ENV_FILE
 Foreground=
+Image=$DEFAULT_IMAGE
+Site_Defaults=$DEFAULT_SITE_DEFAULTS
 
 while getopts ':c:e:fi:s:u:h' opt; do
     case $opt in
@@ -86,6 +107,9 @@ done
 shift $((OPTIND - 1))
 OPTIND=1
 
+# Some boilerplate
+
+export PS4='+ ${FUNCNAME:-(main)}:${LINENO}: '
 set -o nounset
 IFS=$'\n\t'
 unset GREP_OPTIONS POSIXLY_CORRECT
