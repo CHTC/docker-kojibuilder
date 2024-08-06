@@ -188,6 +188,7 @@ Args+=(-v "${Site_Defaults}:/etc/mock/site-defaults.cfg")
 Args+=(-v var_lib_mock:/var/lib/mock)
 Args+=(-v var_lib_koji:/var/lib/koji)
 Args+=(--name kojibuilder)
+Args+=(--net host)
 Args+=(--cap-add SYS_ADMIN)
 
 
