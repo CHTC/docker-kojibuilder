@@ -28,7 +28,7 @@ __TLDR__
 
 DEFAULT_CERT=$PWD/kojid.pem
 DEFAULT_ENV_FILE=$PWD/kojibuilder.cfg
-DEFAULT_IMAGE=osgpreview/koji-builder:testing-arm
+DEFAULT_IMAGE=hub.opensciencegrid.org/osgpreview/koji-builder:testing-arm
 DEFAULT_SITE_DEFAULTS=$PWD/mock-site-defaults.cfg
 
 
