@@ -9,6 +9,7 @@ Usage: $(basename "$0") [options]
     -c [cert]       Path to cert file
     -e [file]       Environment file containing image config
     -f              Run in foreground
+    -n [network]    Use the given network (use '-n host' to use host networking)
     -i [image]      Container image to use
     -s [file]       /etc/mock/site-defaults.cfg file
 
@@ -90,14 +91,16 @@ Cert=$DEFAULT_CERT
 Env_File=$DEFAULT_ENV_FILE
 Foreground=
 Image=$DEFAULT_IMAGE
+Network=
 Site_Defaults=$DEFAULT_SITE_DEFAULTS
 
-while getopts ':c:e:fi:s:u:h' opt; do
+while getopts ':c:e:fi:n:s:u:h' opt; do
     case $opt in
         c) Cert=$OPTARG ;;
         e) Env_File=$OPTARG ;;
         f) Foreground=true ;;
         i) Image=$OPTARG ;;
+        n) Network=$OPTARG ;;
         s) Site_Defaults=$OPTARG ;;
         h) usage 0 ;;
         *) eecho Bad option "$opt"; usage 2 ;;
@@ -188,7 +191,9 @@ Args+=(-v "${Site_Defaults}:/etc/mock/site-defaults.cfg")
 Args+=(-v var_lib_mock:/var/lib/mock)
 Args+=(-v var_lib_koji:/var/lib/koji)
 Args+=(--name kojibuilder)
-Args+=(--net host)
+if [[ $Network ]]; then
+    Args+=(--net "$Network")
+fi
 Args+=(--cap-add SYS_ADMIN)
 
 

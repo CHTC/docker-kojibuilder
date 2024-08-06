@@ -7,7 +7,7 @@ Type=simple
 EnvironmentFile=/etc/osg/kojibuilder.cfg
 
 ExecStartPre=-/usr/bin/docker container rm -f kojibuilder
-ExecStart=/usr/local/sbin/start_kojibuilder.sh -f -c /etc/osg/kojibuilder.pem -e /etc/osg/kojibuilder.cfg -s /etc/osg/kojibuilder-mock-site-defaults.cfg
+ExecStart=/usr/local/sbin/start_kojibuilder.sh -f -c /etc/osg/kojibuilder.pem -e /etc/osg/kojibuilder.cfg -s /etc/osg/kojibuilder-mock-site-defaults.cfg -n host
 
 ExecStop=-/usr/bin/docker container stop -t 30 kojibuilder
 ExecStopPost=-/usr/bin/docker container rm kojibuilder
