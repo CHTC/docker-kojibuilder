@@ -19,4 +19,5 @@ install: kojibuilder.cfg kojibuilder.service mock-site-defaults.cfg start_kojibu
 	install -d                            $(DESTDIR)$(SYSCONFDIR)/osg
 	$(call maybe_install,kojibuilder.cfg,$(DESTDIR)$(SYSCONFDIR)/osg/kojibuilder.cfg)
 	$(call maybe_install,mock-site-defaults.cfg,$(DESTDIR)$(SYSCONFDIR)/osg/kojibuilder-mock-site-defaults.cfg)
+	-systemctl daemon-reload
 
