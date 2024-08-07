@@ -1,0 +1,10 @@
+#!/bin/bash
+: "${BASE_OSG_SERIES:=23}"
+: "${BASE_YUM_REPO:=testing}"
+
+tag=osgpreview/kojibuilder:${BASE_YUM_REPO}-arm
+hub=hub.opensciencegrid.org
+
+docker tag "$tag" "${hub}/${tag}" &&
+docker push "${hub}/${tag}"
+

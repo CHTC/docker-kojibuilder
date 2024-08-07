@@ -1,0 +1,6 @@
+#!/bin/bash
+: "${BASE_OSG_SERIES:=23}"
+: "${BASE_YUM_REPO:=testing}"
+export BUILDAH_FORMAT=docker  # needed for HEALTHCHECK
+docker build --build-arg BASE_OSG_SERIES="$BASE_OSG_SERIES" --build-arg BASE_YUM_REPO="$BASE_YUM_REPO" \
+    -t "osgpreview/koji-builder:${BASE_YUM_REPO}-arm" .
