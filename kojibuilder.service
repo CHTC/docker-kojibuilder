@@ -14,6 +14,9 @@ ExecStart=/usr/local/sbin/start_kojibuilder.sh -f -c /etc/osg/kojibuilder.pem -e
 ExecStop=-/usr/bin/docker container stop -t 30 kojibuilder
 ExecStopPost=-/usr/bin/docker container rm kojibuilder
 
+Restart=on-failure
+RestartSec=60
+
 [Install]
 WantedBy=multi-user.target
 
