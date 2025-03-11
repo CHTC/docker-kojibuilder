@@ -1,5 +1,5 @@
 #!/bin/bash
-: "${BASE_OSG_SERIES:=23}"
+: "${BASE_OSG_SERIES:=24}"
 : "${BASE_YUM_REPO:=testing}"
 
 tag=osgpreview/kojibuilder:${BASE_YUM_REPO}-arm
