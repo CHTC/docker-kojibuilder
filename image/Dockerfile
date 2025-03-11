@@ -2,7 +2,7 @@ ARG BASE_OSG_SERIES=24
 ARG BASE_YUM_REPO=testing
 ARG BASE_OS=el9
 
-FROM osgpreview/software-base:24-el9-testing-arm
+FROM hub.opensciencegrid.org/osg-htc/software-base:24-el9-testing
 # OSG kojid container
 # Requires CAP_SYS_ADMIN for chroot(1), unshare(1), and mounting tmpfs
 
