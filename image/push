@@ -2,7 +2,7 @@
 : "${BASE_OSG_SERIES:=24}"
 : "${BASE_YUM_REPO:=testing}"
 
-tag=osgpreview/kojibuilder:${BASE_YUM_REPO}-arm
+tag=osgpreview/koji-builder:${BASE_YUM_REPO}-arm
 hub=hub.opensciencegrid.org
 
 docker tag "$tag" "${hub}/${tag}" &&
