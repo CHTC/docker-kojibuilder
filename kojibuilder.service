@@ -1,8 +1,7 @@
 [Unit]
 Description=Koji Builder service
-# This service could run with podman which is why docker.service is in After but not Wants
 After=network-online.target docker.service
-Wants=network-online.target
+Wants=docker.service
 
 [Service]
 Type=simple
