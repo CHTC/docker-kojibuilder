@@ -14,7 +14,8 @@ RUN --mount=type=cache,target=/var/cache/dnf,sharing=locked \
    yum install -y --enablerepo=osg-internal-development \
     koji-builder \
     # bind-utils for the nslookup health check \
-    bind-utils
+    bind-utils \
+    osg-internal-cas
 
 COPY kojid-supervisord.conf  /etc/supervisord.d/kojid.conf
 COPY koji_ca_cert.crt  /etc/pki/tls/certs/koji_ca_cert.crt
