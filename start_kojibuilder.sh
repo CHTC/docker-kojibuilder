@@ -185,6 +185,7 @@ if is_true "$Foreground"; then
 else
     Args+=(--detach)
 fi
+Args+=(--pull=always)
 Args+=(--env-file "$Env_File")
 Args+=(-v "${Cert}:/etc/pki/tls/private/kojid.pem:ro")
 Args+=(-v "${Site_Defaults}:/etc/mock/site-defaults.cfg")
