@@ -1,0 +1,8 @@
+#!/bin/bash
+
+tag=osgpreview/koji-builder:el10
+hub=hub.opensciencegrid.org
+
+docker tag "$tag" "${hub}/${tag}" &&
+docker push "${hub}/${tag}"
+

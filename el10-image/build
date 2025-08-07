@@ -1,0 +1,4 @@
+#!/bin/bash
+export BUILDAH_FORMAT=docker  # needed for HEALTHCHECK
+docker build  \
+    -t "osgpreview/koji-builder:el10" .
